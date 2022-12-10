@@ -21,7 +21,7 @@ public class BudgetService {
      this.budgetRepo = budgetRepo;
     }
     public double Query(LocalDate startTime, LocalDate endTime){
-        if(startTime.compareTo(endTime)<0){
+        if(endTime.compareTo(startTime)<0){
             return 0.00;
         }
 
@@ -29,7 +29,7 @@ public class BudgetService {
         if (budgets.isEmpty()){
             return 0.00;
         }
-        
+
 
         if(startTime.getYear()==endTime.getYear()&&startTime.getMonth().equals(endTime.getMonth())){
             int durationDay = endTime.getDayOfMonth() - startTime.getDayOfMonth()+1;
@@ -54,33 +54,37 @@ public class BudgetService {
                 tempStartTime = tempStartTime.plusMonths(1);
                 durationMonth++;
             }
+            int em = durationMonth;
             double amount=0;
             for(int i=0;i<durationMonth;i++){
 
                 LocalDate tempCalStartTime = startTime.plusMonths(i);
                 LocalDate tempCalEndTime = endTime.plusMonths(i);
                 int durationDay=0;
-                if (i == 0) {
+                if (tempCalStartTime.getMonth().getValue() == startTime.getMonth().getValue()) {
                      durationDay = YearMonth.from(tempCalStartTime).lengthOfMonth() - tempCalStartTime.getDayOfMonth()+1;
-                }else if(i==durationMonth-1){
+                }else if(tempCalStartTime.getMonth().getValue()==endTime.getMonth().getValue()){
                      durationDay = endTime.getDayOfMonth();
                 }else{
-                    durationDay = YearMonth.from(tempCalEndTime).lengthOfMonth();
+                    durationDay = YearMonth.from(tempCalStartTime).lengthOfMonth();
                 }
 
 
-                String pk = String.format("%d%d",startTime.getYear(),startTime.getMonth().getValue());
+
+                String pk = String.format("%d%d",YearMonth.from(tempCalStartTime).getYear(),YearMonth.from(tempCalStartTime).getMonthValue());
                 Optional<Budget> budgetOpt = budgets.stream().filter(b ->
                         b.getYearMonth().equals(pk)).findFirst();
-                double monthAmount =calTotalBudget(startTime,budgetOpt.get().getAmount(),durationDay);
+                double monthAmount =calTotalBudget(tempCalStartTime,budgetOpt.get().getAmount(),durationDay);
                 amount=amount+monthAmount;
+
             }
+            return amount;
         }
 
 
 
 
-        return 0;
+
     }
     private double calTotalBudget(TemporalAccessor startTime, int budget, int duration){
 
@@ -89,6 +93,6 @@ public class BudgetService {
 
         int days = from.lengthOfMonth();
 
-        return (duration/days) *  budget;
+        return ( (double)duration/ (double)days) *  (double)budget;
     }
 }
