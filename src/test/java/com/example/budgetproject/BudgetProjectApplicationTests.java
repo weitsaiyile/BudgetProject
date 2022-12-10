@@ -57,10 +57,11 @@ class BudgetProjectApplicationTests {
     }
 
     @Test
-    public void endTime_greaterThen_startTime(){
+    public void startTime_greaterThen_endTime(){
         double actualAmount = selectActualAmount("20220202","20220201");
         amountShouldBe(0,actualAmount);
     }
+
 
 
 
