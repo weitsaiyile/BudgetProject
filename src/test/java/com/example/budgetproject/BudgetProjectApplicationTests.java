@@ -27,7 +27,7 @@ class BudgetProjectApplicationTests {
         when(mock.getAll()).thenReturn(Arrays.asList
                 (new Budget("202212",31),
                         new Budget("202301",3100),
-                        new Budget("202302",280)) );
+                        new Budget("202302",280)));
     }
 
     @Test

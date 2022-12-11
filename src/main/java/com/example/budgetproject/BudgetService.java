@@ -17,38 +17,37 @@ public class BudgetService {
     }
 
     public double Query(LocalDate startTime, LocalDate endTime) {
-        if(endTime.compareTo(startTime)<0){
+        if (endTime.compareTo(startTime) < 0) {
             return 0;
         }
 
 
-        if (startTime.equals(endTime)) {
+        if (!startTime.equals(endTime)) {
+            long durationMonth = YearMonth.from(startTime).until(YearMonth.from(endTime), ChronoUnit.MONTHS);
+//            if (durationMonth != 0) {
+            LocalDate tempDate = startTime;
+            double currentAmount = 0;
+            for (int i = 0; i <= durationMonth; i++) {
+                long durationDay = 0;
+                if (i == 0 && durationMonth == 0) {
+                    durationDay = endTime.toEpochDay() - tempDate.toEpochDay() + 1;
+                } else if (i == 0) {
+                    durationDay = tempDate.lengthOfMonth() - tempDate.getDayOfMonth() + 1;
+                } else if (i == durationMonth) {
+                    LocalDate endTimeFirstDay = endTime.with(TemporalAdjusters.firstDayOfMonth());
+                    durationDay = endTime.toEpochDay() - endTimeFirstDay.toEpochDay() + 1;
+                } else {
+                    durationDay = tempDate.lengthOfMonth();
+                }
+                currentAmount = currentAmount + calAmount(tempDate, durationDay);
+                tempDate = tempDate.plusMonths(1);
+            }
+            return currentAmount;
+//
+
+        } else {
             long durationDay = endTime.toEpochDay() - startTime.toEpochDay() + 1;
             return calAmount(startTime, durationDay);
-        } else {
-            long durationMonth = YearMonth.from(startTime).until(YearMonth.from(endTime), ChronoUnit.MONTHS);
-            if (durationMonth == 0) {
-                long durationDay = endTime.toEpochDay() - startTime.toEpochDay() + 1;
-                return calAmount(startTime, durationDay);
-            } else {
-                LocalDate tempDate = startTime;
-                double currentAmount = 0;
-                for (int i = 0; i <= durationMonth; i++) {
-                    long durationDay = 0;
-                    if (i == 0) {
-                        durationDay = tempDate.lengthOfMonth() - tempDate.getDayOfMonth() + 1;
-                    } else if (i == durationMonth) {
-                        LocalDate endTimeLastDay = endTime.with(TemporalAdjusters.firstDayOfMonth());
-                        durationDay = endTime.toEpochDay() - endTimeLastDay.toEpochDay()+1;
-                    } else {
-                        durationDay = tempDate.lengthOfMonth();
-                    }
-                    currentAmount = currentAmount + calAmount(tempDate, durationDay);
-                    tempDate = tempDate.plusMonths(1);
-                }
-                return currentAmount;
-            }
-
         }
 
     }
@@ -61,8 +60,8 @@ public class BudgetService {
     private double getTotalBudget(LocalDate startTime) {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMM");
         String lookUpKey = startTime.format(dateFormatter);
-        List<Budget> budgetList = budgetRepo.getAll() ;
-        if(budgetList.isEmpty()){
+        List<Budget> budgetList = budgetRepo.getAll();
+        if (budgetList.isEmpty()) {
             return 0;
         }
         for (Budget budget : budgetRepo.getAll()) {
